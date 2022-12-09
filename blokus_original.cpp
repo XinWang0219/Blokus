@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+
 // allowed includes
 // tuple, utility, vector, map, set, unordered_map,
 // unordered_set, algorithm
@@ -103,11 +104,14 @@ RESIZE: make the board bigger or smaller. When smaller,
 
 
 typedef int TileID;
+#define DEFAULT_ID 100
 
 class Tile {
   public:
-    vector<vector<char>> tile;
     TileID id;
+    int size;
+    vector<vector<char>> tile;
+    
   // common interface. required.
   public:
     void show() const;  // print out tile in tilebox format
@@ -117,7 +121,14 @@ class Tile {
 };
 
 void Tile::show() const {
-  //todo
+    for(auto row : Tile::tile)
+    {
+      for(auto c : row)
+      {
+        cout << c;
+      }
+      cout << "\n";
+    }
 }
 
 void Tile::rotate() {
@@ -135,110 +146,134 @@ void Tile::fliplr() {
 class Blokus {
   // common interface. required.
   // collection of Tiles
-  vector<vector<char>> board;
-  map<int, Tile> tile_map;
+  public:
+    vector<vector<char>> board;
+    map<TileID, Tile> tile_map;
 
- public:
-  Tile* find_tile(TileID);
-  void create_piece() {
-    // read in the size
-    // read in strings
-    // make a Tile
-    // store it in a collection of Tiles
-    int error_type = 0;
-    bool tile_is_empty = true;
-    int a;
-    string s;
-    cin >> a;
-    Tile t;
-    t.tile.resize(a, vector<char>(a));
-    for(int i = 0; i < a; i++)
-    {
-      cin >> s;
-      if(s.length() != a)
+  public:
+    Tile* find_tile(TileID);
+    void create_piece() {
+      // read in the size
+      // read in strings
+      // make a Tile
+      // store it in a collection of Tiles
+      int error_type = 0;
+      bool tile_is_empty = true;
+      int a;
+      string s;
+      cout << "input size:" << endl;
+      cin >> a;
+      Tile t;
+
+      for(int i = 0; i < a; i++)
       {
-        // tile is not sqaure
-        error_type = 3;
+        vector<char> line;
+        cout << "input " << i << " line:" << endl;
+        cin >> s;
+        if(s.length() != a)
+        {
+          // tile is not sqaure
+          error_type = 3;
+        }
+
+        for(int j = 0; j < s.length(); j++)
+        {
+          char c = s.at(j);
+          if(c == '*')
+          {
+            tile_is_empty = false;
+          }
+
+          if(c != '.' & c != '*')
+          {
+            // tile element is invalid;
+            error_type = 2;
+          }
+
+          line.push_back(c);
+        }
+        t.tile.push_back(line);
       }
 
-      for(int j = 0; j < s.length(); j++)
+      if(tile_is_empty)
       {
-        char c = s.at(j);
-        if(c == '*')
-        {
-          tile_is_empty = false;
-        }
-
-        if(c != '.' & c != '*')
-        {
-          // tile element is invalid;
-          error_type = 2;
-        }
-
-        t.tile.at(i).push_back(c);
+        error_type = 1;
       }
-    }
 
-    if(tile_is_empty)
-    {
-      error_type = 1;
-    }
-
-    if(error_type > 0)
-    {
-      cout << "invalid tile" << endl;
-      return;
-    }
-
-    for(int i = 0; i < t.tile.size(); i++)
-    {
-      for(int j=0; j < t.tile.at(i).size(); j++)
+      if(error_type > 0)
       {
-        bool is_connected = false;
-        if(i > 0 & t.tile.at(i-1).at(j) == '*')
-        {
-          // top connected
-          is_connected = true;
-        }
-        if(i < (t.tile.size() - 1) & t.tile.at(i+1).at(j) == '*')
-        {
-          // bottom connected
-          is_connected = true;
-        }
-        if(j > 0 & t.tile.at(i).at(j-1) == '*')
-        {
-          // left connected
-          is_connected = true;
-        }
-        if(j < (t.tile.size() - 1) & t.tile.at(i).at(j+1) == '*')
-        {
-          //right connected
-          is_connected = true;
-        }
+        cout << "invalid tile" << endl;
+        return;
+      }
 
-        if(!is_connected)
+      for(int i = 0; i < t.tile.size(); i++)
+      {
+        for(int j = 0; j < t.tile.at(i).size(); j++)
         {
-          cout << "disconnected tile discarded" << endl;
-          return;
+          bool is_connected = false;
+          // cout << "check top" <<endl;
+          if(i > 0)
+          {
+            if(t.tile.at(i-1).at(j) == '*')
+            {
+              // top connected
+              is_connected = true;
+            }
+          }
+          // cout << "check bottom" <<endl;
+          if(i < (t.tile.size() - 1))
+          {
+            if(t.tile.at(i+1).at(j) == '*')
+            {
+              // bottom connected
+              is_connected = true;
+            }
+          }
+          // cout << "check left" << endl;
+          if(j > 0)
+          {
+            if(t.tile.at(i).at(j-1) == '*')
+            {
+              // left connected
+              is_connected = true;
+            }
+          }
+          // cout << "check right" <<endl;
+          if(j < (t.tile.size() - 1))
+          {
+            if(t.tile.at(i).at(j+1) == '*')
+            {
+              //right connected
+              is_connected = true;
+            }
+          }
+
+          if(!is_connected)
+          {
+            cout << "disconnected tile discarded" << endl;
+            return;
+          }
         }
       }
+
+      // todo: check whether t is already existed.
+
+      TileID id = this->tile_map.size() + DEFAULT_ID;
+      this->tile_map.insert({id, t});
+
+      cout << "created tile " << id << endl;
     }
 
-    
-
-  }
-
-  void reset();
-  void show_tiles() const;
-  void show_board() const;
-  void play_tile(TileID, int, int);
-  void set_size(int);
+    void reset();
+    void show_tiles() const;
+    void show_board() const;
+    void play_tile(TileID, int, int);
+    void set_size(int);
 };
 
 Tile* Blokus::find_tile(TileID id) {
   //todo
-  Tile* t = new Tile();
-  return t;
+  return &tile_map[id];
 }
 
 void Blokus::reset() {
@@ -246,7 +281,13 @@ void Blokus::reset() {
 }
 
 void Blokus::show_tiles() const {
-  //todo;
+
+  for(auto it : Blokus::tile_map)
+  {
+    cout << "Tile ID: " << it.first << endl;
+    it.second.show();
+  }
+
 }
 
 void Blokus::show_board() const {
