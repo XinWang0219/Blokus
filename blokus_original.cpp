@@ -133,15 +133,102 @@ void Tile::show() const {
 
 void Tile::rotate() {
   //todo
+    int size=tile.size();
+    for (int i = 0; i < size / 2; i++) {
+        for (int j = i; j < size - i - 1; j++) {
+        // save the top left element in a temporary variable
+        int temp = tile[i][j];
+
+        // move the top right element to the top left
+        tile[i][j] = tile[j][size - i - 1];
+
+        // move the bottom right element to the top right
+        tile[j][size - i - 1] = tile[size - i - 1][size - j - 1];
+
+        // move the bottom left element to the bottom right
+        tile[size - i - 1][size - j - 1] = tile[size - j - 1][i];
+
+        // move the top left element (saved in temp) to the bottom left
+        tile[size - j - 1][i] = temp;
+        }
+    }
 }
 
 void Tile::flipud() {
   //todo
+  int rowstart=0;
+  int rowend=tile.size()-1;
+  bool isStart=false;
+  bool isEnd=false;
+  for(int i=0;i<tile.size();i++) {
+    if(!isStart) {
+        for(int j=0;j<tile[0].size();j++) {
+            if(tile[i][j]=='*') {
+                isStart=true;
+                rowstart=i;
+                break;
+            }
+        }
+    }
+    if(isStart && !isEnd) {
+        rowend=i-1;
+        for(int j=0;j<tile[0].size();j++) {
+            if(tile[i][j]=='*') {
+                isEnd=false;
+                rowend=tile.size()-1;
+                break;
+            }
+            isEnd=true;
+        }        
+    }
+  }
+  for(int r=rowstart;r<=(rowend-rowstart)/2;r++) {
+    for(int c=0;c<tile[0].size();c++) {
+        char temp=tile[r][c];
+        tile[r][c]=tile[rowend-rowstart-r][c];
+        tile[rowend-rowstart-r][c]=temp;
+    }
+  }
 }
 
 void Tile::fliplr() {
   //todo
+  int colstart=0;
+  int colend=tile[0].size()-1;
+  bool isStart=false;
+  bool isEnd=false;
+  for(int i=0;i<tile[0].size();i++) {
+    if(!isStart) {
+        for(int j=0;j<tile.size();j++) {
+            if(tile[j][i]=='*') {
+                isStart=true;
+                colstart=i;
+                break;
+            }
+        }
+    }
+    if(isStart && !isEnd) {
+        colend=i-1;
+        for(int j=0;j<tile.size();j++) {
+            if(tile[j][i]=='*') {
+                isEnd=false;
+                colend=tile[0].size()-1;
+                break;
+            }
+            isEnd=true;
+        }        
+    }
+  }
+    for(int c=colstart;c<=(colend-colstart)/2;c++) {
+        for(int r=0;r<tile.size();r++) {
+            char temp=tile[r][c];
+            tile[r][c]=tile[r][colend-colstart-c];
+            tile[r][colend-colstart-c]=temp;
+        }
+    }
 }
+
+
 
 class Blokus {
   // common interface. required.
@@ -257,6 +344,7 @@ class Blokus {
       }
 
       // todo: check whether t is already existed.
+
 
       TileID id = this->tile_map.size() + DEFAULT_ID;
       this->tile_map.insert({id, t});
